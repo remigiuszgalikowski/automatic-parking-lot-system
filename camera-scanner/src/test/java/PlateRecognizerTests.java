@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PlateRecognizerTests {
 
-    //PlateRecognizer recognizer = new PlateRecognizer();
+    PlateRecognizer recognizer = new PlateRecognizer();
     public PlateRecognizerTests() throws ParserConfigurationException, IOException, SAXException {
     }
 
@@ -22,7 +22,12 @@ public class PlateRecognizerTests {
         pathnamesPhotos = f.list();
         for (String path : pathnamesPhotos) {
             CarSnapshot carSnap = new CarSnapshot(resourcesPath.concat(path));
-            //assertEquals(path.substring(0, path.lastIndexOf('.')), recognizer.recognize(carSnap));
+            assertEquals(path.substring(0, path.lastIndexOf('.')), recognizer.recognize(carSnap));
         }
+    }
+
+    @Test
+    public void testVideos() {
+
     }
 }
