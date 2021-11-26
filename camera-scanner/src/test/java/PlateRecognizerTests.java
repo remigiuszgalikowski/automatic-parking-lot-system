@@ -1,4 +1,3 @@
-import net.sf.javaanpr.imageanalysis.CarSnapshot;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -21,8 +20,7 @@ public class PlateRecognizerTests {
         File f = new File(resourcesPath);
         pathnamesPhotos = f.list();
         for (String path : pathnamesPhotos) {
-            CarSnapshot carSnap = new CarSnapshot(resourcesPath.concat(path));
-            assertEquals(path.substring(0, path.lastIndexOf('.')), recognizer.recognize(carSnap));
+            assertEquals(path.substring(0, path.lastIndexOf('.')), recognizer.recognize(path));
         }
     }
 
