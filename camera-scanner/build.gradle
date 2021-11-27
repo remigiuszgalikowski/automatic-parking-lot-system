@@ -14,6 +14,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     implementation 'com.github.oskopek:javaanpr:1.2.7'
+    implementation files('../libraries/opencv/build/java/opencv-454.jar')
 }
 
 test {
