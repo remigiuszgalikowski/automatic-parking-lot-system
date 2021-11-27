@@ -15,17 +15,21 @@ public class PlateRecognizerTests {
 
     @Test
     public void testPhotos() throws IOException {
-        String[] pathnamesToPhotos;
-        String resourcesPath = System.getProperty("user.dir").concat("\\src\\test\\resources\\photos");
+        String resourcesPath = System.getProperty("user.dir").concat("\\src\\test\\resources\\photos\\");
         File f = new File(resourcesPath);
-        pathnamesToPhotos = f.list();
-        for (String path : pathnamesToPhotos) {
-            assertEquals(path.substring(0, path.lastIndexOf('.')), recognizer.recognize(path));
+        String[] filenames = f.list();
+        for (String filename : filenames) {
+            assertEquals(filename.substring(0, filename.lastIndexOf('.')), recognizer.recognize(resourcesPath + filename));
         }
     }
 
     @Test
-    public void testVideos() {
-
+    public void testVideos() throws IOException {
+        String resourcesPath = System.getProperty("user.dir").concat("\\src\\test\\resources\\videos\\");
+        File f = new File(resourcesPath);
+        String[] filenames = f.list();
+        for (String filename : filenames) {
+            assertEquals(filename.substring(0, filename.lastIndexOf('.')), recognizer.recognize(resourcesPath + filename));
+        }
     }
 }
