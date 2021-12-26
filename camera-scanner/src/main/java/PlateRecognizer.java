@@ -1,5 +1,4 @@
 import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
 import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -16,10 +15,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-public class PlateRecognizer implements Recognition, MotionDetection {
+public class PlateRecognizer implements Recognizer {
 
-    private final Adaptation adapter;
+    private final Adapter adapter;
     private final Tesseract tesseract;
+    private final Converter converter;
     private final Supplier<Long> timeSupplier;
 
     static double MINIMAL_MOVEMENT_RATIO = 3;
@@ -28,76 +28,41 @@ public class PlateRecognizer implements Recognition, MotionDetection {
     static long MOVEMENT_DETECTION_INTERVAL = 10 * 1000;
     static long PLATE_RECOGNITION_INTERVAL = 1 * 1000;
 
-    public PlateRecognizer(Adaptation adapter) {
+    public PlateRecognizer(Adapter adapter) {
         this.adapter = adapter;
         this.tesseract = new Tesseract();
         this.tesseract.setDatapath("C:\\Users\\HP\\IdeaProjects\\automatic-parking-lot-system\\libraries\\Tesseract-OCR\\tessdata");
+        this.converter = new Converter();
         this.timeSupplier = System::currentTimeMillis;
     }
 
-    @Override
-    public String recognize() {
-        Mat currentFrameMiniature;
-        Mat previousFrameMiniature;
-        Mat currentFrame;
-        do {
-            previousFrameMiniature = this.adapter.getFrameMiniature();
-            this.waitForNextFrame(MOVEMENT_DETECTION_INTERVAL);
-            currentFrameMiniature = this.adapter.getFrameMiniature();
-        } while (!detectMotion(previousFrameMiniature, currentFrameMiniature));
-        String plateText;
-        long startRecognitionTime = this.timeSupplier.get();
-        do {
-            currentFrame = this.adapter.getFrame();
-            List<Mat> plateCandidates = this.detectPlates(currentFrame);
-            plateText = this.readPlates(plateCandidates);
-            System.out.println(plateText);
-            if (plateText != null) return plateText;
-            this.waitForNextFrame(PLATE_RECOGNITION_INTERVAL);
-        } while (PLATE_RECOGNITION_TIME >= this.timeSupplier.get() - startRecognitionTime);
-        return null;
-    }
+//    @Override
+//    public String recognize() {
+//        Mat currentFrameMiniature;
+//        Mat previousFrameMiniature;
+//        Mat currentFrame;
+//        do {
+//            previousFrameMiniature = this.adapter.getFrameMiniature();
+//            this.waitForNextFrame(MOVEMENT_DETECTION_INTERVAL);
+//            currentFrameMiniature = this.adapter.getFrameMiniature();
+//        } while (!detect(previousFrameMiniature, currentFrameMiniature));
+//        String plateText;
+//        long startRecognitionTime = this.timeSupplier.get();
+//        do {
+//            currentFrame = this.adapter.getFrame();
+//            List<Mat> plateCandidates = this.detectPlates(currentFrame);
+//            plateText = this.readPlates(plateCandidates);
+//            System.out.println(plateText);
+//            if (plateText != null) return plateText;
+//            this.waitForNextFrame(PLATE_RECOGNITION_INTERVAL);
+//        } while (PLATE_RECOGNITION_TIME >= this.timeSupplier.get() - startRecognitionTime);
+//        return null;
+//    }
 
     @Override
-    public boolean detectMotion(Mat currentFrame, Mat previousFrame) {
-
-        long startTime = this.timeSupplier.get();
-
-        Mat frame1 = new Mat();
-        Mat frame2 = new Mat();
-        Imgproc.cvtColor(currentFrame, frame1, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.cvtColor(previousFrame, frame2, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.GaussianBlur(frame1, frame1, new Size(21, 21), 0);
-        Imgproc.GaussianBlur(frame2, frame2, new Size(21, 21), 0);
-        Mat subtraction = new Mat();
-        Core.absdiff(frame1, frame2, subtraction);
-
-        double valueFromMatrix = 0;
-
-        for (int h = 0; h < subtraction.height(); h++) {
-            for (int w = 0; w < subtraction.width(); w++) {
-                if (subtraction.get(w, h) != null) {
-                    valueFromMatrix += subtraction.get(w, h)[0];
-                }
-            }
-        }
-
-        valueFromMatrix /= subtraction.width() * subtraction.height();
-
-        //Temporary
-        //System.out.println(valueFromMatrix);
-        //this.debug(subtraction, "subtraction");
-        //-----------
-
-        long timeStamp = this.timeSupplier.get() - startTime;
-        System.out.println("motionDetect: " + timeStamp);
-
-        return valueFromMatrix > MINIMAL_MOVEMENT_RATIO;
-    }
-
-    private List<Mat> detectPlates(Mat frameForAnalysis) {
+    public BufferedImage recognize(Mat image) {
         Mat grayScale = new Mat();
-        Imgproc.cvtColor(frameForAnalysis, grayScale, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor(image, grayScale, Imgproc.COLOR_BGR2GRAY);
         Mat bilateral = new Mat();
         Imgproc.bilateralFilter(grayScale, bilateral, 13, 15, 15);
         Mat canny = new Mat();
@@ -114,18 +79,17 @@ public class PlateRecognizer implements Recognition, MotionDetection {
         });
         contours = contours.subList(0,10);
 
-        List<Mat> plateCandidates = new ArrayList<>();
+        Mat plateCandidate = null;
         for (MatOfPoint mop : contours) {
             MatOfPoint2f mopAprox = new MatOfPoint2f();
             double perimeter = Imgproc.arcLength(new MatOfPoint2f(mop.toArray()), true);
             Imgproc.approxPolyDP(new MatOfPoint2f(mop.toArray()), mopAprox, 0.018 * perimeter, true);
             if (isPlate(mopAprox)) {
-                //this.debug(mopAprox, frameForAnalysis, "plate highlighted");
-                plateCandidates.add(bilateral.submat(this.createRectangle(mopAprox)));
-                //this.debug(plateCandidates.get(0), "plate only");
+                 plateCandidate = bilateral.submat(this.createRectangle(mopAprox));
             }
+            if (plateCandidate != null) return this.converter.toBufferedImage(plateCandidate);
         }
-        return plateCandidates;
+        return null;
 
 //        contours.stream()
 //                .map(mop -> {
@@ -136,30 +100,6 @@ public class PlateRecognizer implements Recognition, MotionDetection {
 //                })
 //                .filter(this::isPlate)
 //                .forEach((mopApprox) -> this.debug(mopApprox, frameForAnalysis));
-    }
-
-    private String readPlates(List<Mat> plates) {
-        String plateText;
-        for(Mat plate : plates) {
-            try {
-                plateText = this.tesseract.doOCR(this.mat2BufferedImage(plate));
-                plateText = plateText.replaceAll("\\s+","");
-                System.out.println(plateText);
-            } catch (TesseractException e) {
-                plateText = null;
-                System.out.println("No plate text");
-            }
-            if (plateText != null) return plateText;
-        }
-        return null;
-    }
-
-    private void waitForNextFrame(long time) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(time);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     private boolean isPlate(MatOfPoint2f suspectedPlate) {
@@ -205,38 +145,4 @@ public class PlateRecognizer implements Recognition, MotionDetection {
                 .min(Double::compare).orElse(0.0);
         return new Rect(new Point(leftBorder, bottomBorder), new Point(rightBorder, topBorder));
     }
-
-    public void debug(MatOfPoint2f mop, Mat inputMat, String name) {
-        Mat outputMat = inputMat;
-        Imgproc.line(outputMat, mop.toList().get(0), mop.toList().get(1), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(1), mop.toList().get(2), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(2), mop.toList().get(3), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(3), mop.toList().get(0), new Scalar(255, 255, 255, 255), 3);
-        HighGui.imshow("debug:"+ name, outputMat);
-        HighGui.waitKey();
-    }
-    public void debug(Mat inputMat, String name) {
-        Mat outputMat = inputMat;
-        HighGui.imshow("debug:"+ name, outputMat);
-        HighGui.waitKey();
-    }
-
-    private BufferedImage mat2BufferedImage(Mat mat) {
-        try {
-        //Encoding the image
-        MatOfByte matOfByte = new MatOfByte();
-        Imgcodecs.imencode(".jpg", mat, matOfByte);
-        //Storing the encoded Mat in a byte array
-        byte[] byteArray = matOfByte.toArray();
-        //Preparing the Buffered Image
-        InputStream in = new ByteArrayInputStream(byteArray);
-        BufferedImage buffImage = null;
-        buffImage = ImageIO.read(in);
-        return buffImage;
-        }
-        catch (IOException e) {
-            return null;
-        }
-    }
-
 }

@@ -4,11 +4,11 @@ import java.util.function.Supplier;
 
 import static org.opencv.videoio.Videoio.CAP_PROP_FPS;
 
-public class TestAdapterMat implements Adaptation {
+public class TestAdapterMat implements Adapter {
 
     static double MILLISECONDS_PER_FRAME;
 
-    private final Adaptation adapter;
+    private final Adapter adapter;
     private final Supplier<Long> timeSupplier;
 
     private int lastFrameNumber = 0;

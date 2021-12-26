@@ -2,7 +2,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-public class AdapterMat implements Adaptation {
+public class AdapterMat implements Adapter {
 
     public final Size miniatureSize;
     private Mat previousFrame;

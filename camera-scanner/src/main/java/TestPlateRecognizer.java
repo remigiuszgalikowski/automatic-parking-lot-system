@@ -1,19 +1,20 @@
 import org.opencv.core.Mat;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class TestPlateRecognizer implements MotionDetection, Recognition {
+public class TestPlateRecognizer implements Detector, Recognizer {
 
-    private final Recognition plateRecognizer;
+    private final Recognizer plateRecognizer;
     private final Supplier<Long> timeSupplier;
 
     private List<Long> motionDetectionTimes;
     private List<Long> plateRecognitionTimes;
 
 
-    public TestPlateRecognizer(Adaptation adapter) {
+    public TestPlateRecognizer(Adapter adapter) {
         this.plateRecognizer = new PlateRecognizer(adapter);
         this.timeSupplier = System::currentTimeMillis;
         this.motionDetectionTimes = new ArrayList<>();
@@ -21,9 +22,9 @@ public class TestPlateRecognizer implements MotionDetection, Recognition {
     }
 
     @Override
-    public boolean detectMotion(Mat frame1, Mat frame2) {
+    public boolean detect(Mat frame1, Mat frame2) {
         long startTime = this.timeSupplier.get();
-        boolean ifMoved = this.detectMotion(frame1, frame2);
+        boolean ifMoved = this.detect(frame1, frame2);
         long timeStamp = this.timeSupplier.get() - startTime;
         this.motionDetectionTimes.add(timeStamp);
         System.out.println("motionDetect: " + timeStamp);
@@ -31,13 +32,14 @@ public class TestPlateRecognizer implements MotionDetection, Recognition {
     }
 
     @Override
-    public String recognize() {
+    public BufferedImage recognize(Mat image) {
+
         long startTime = this.timeSupplier.get();
-        String plateText = this.plateRecognizer.recognize();
+        BufferedImage plateText = this.plateRecognizer.recognize(image);
         long timeStamp = this.timeSupplier.get() - startTime;
         this.plateRecognitionTimes.add(timeStamp);
         System.out.println("plateRecog: " + timeStamp);
-        return plateText;
+        return null;
     }
 
     public long getAvgPlateRecognitionTime() {
