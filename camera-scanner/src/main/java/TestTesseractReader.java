@@ -18,7 +18,7 @@ public class TestTesseractReader implements Reader {
     }
 
     @Override
-    public String read(BufferedImage bufferedImage) {
+    public String read(Object bufferedImage) {
         long startTime = this.timeSupplier.get();
         String text = this.reader.read(bufferedImage);
         long duration = this.timeSupplier.get() - startTime;

@@ -10,12 +10,12 @@ public class MotionDetector implements Detector {
     public MotionDetector() {}
 
     @Override
-    public boolean detect(Mat previousFrame, Mat currentFrame) {
+    public boolean detect(Object previousFrame, Object currentFrame) {
 
         Mat frame1 = new Mat();
         Mat frame2 = new Mat();
-        Imgproc.cvtColor(currentFrame, frame1, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.cvtColor(previousFrame, frame2, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor((Mat) currentFrame, frame1, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor((Mat) previousFrame, frame2, Imgproc.COLOR_BGR2GRAY);
         Imgproc.GaussianBlur(frame1, frame1, new Size(21, 21), 0);
         Imgproc.GaussianBlur(frame2, frame2, new Size(21, 21), 0);
         Mat subtraction = new Mat();

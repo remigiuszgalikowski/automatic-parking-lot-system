@@ -20,7 +20,7 @@ public class TestPlateRecognizer implements Recognizer {
     }
 
     @Override
-    public BufferedImage recognize(Mat image) {
+    public BufferedImage recognize(Object image) {
         long startTime = this.timeSupplier.get();
         BufferedImage recognizedImage = this.plateRecognizer.recognize(image);
         long duration = this.timeSupplier.get() - startTime;

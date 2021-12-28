@@ -13,10 +13,10 @@ public class TesseractReader implements Reader {
     }
 
     @Override
-    public String read(BufferedImage image) {
+    public String read(Object image) {
         String plateText;
         try {
-            plateText = this.tesseract.doOCR(image);
+            plateText = this.tesseract.doOCR((BufferedImage) image);
             plateText = plateText.replaceAll("\\s+","");
             return plateText;
         } catch (TesseractException e) {

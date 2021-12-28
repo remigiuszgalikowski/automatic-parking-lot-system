@@ -40,10 +40,10 @@ public class PlateRecognizer implements Recognizer {
 //    }
 
     @Override
-    public BufferedImage recognize(Mat image) {
+    public BufferedImage recognize(Object image) {
 
         Mat grayScale = new Mat();
-        Imgproc.cvtColor(image, grayScale, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor((Mat) image, grayScale, Imgproc.COLOR_BGR2GRAY);
         Mat bilateral = new Mat();
         Imgproc.bilateralFilter(grayScale, bilateral, 13, 15, 15);
         Mat canny = new Mat();
@@ -68,7 +68,7 @@ public class PlateRecognizer implements Recognizer {
             if (isPlate(mopAprox)) {
                 Rect rect = this.createRectangle(mopAprox);
                 plateCandidate = bilateral.submat(rect);
-                this.adapter.setHighlightedFrame(this.highlightPlate(image, rect));
+                this.adapter.setHighlightedFrame(this.highlightPlate((Mat) image, rect));
             }
             if (plateCandidate != null) return this.imageConverter.toBufferedImage(plateCandidate);
         }

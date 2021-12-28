@@ -17,7 +17,7 @@ public class TestMotionDetector implements Detector {
     }
 
     @Override
-    public boolean detect(Mat previousFrame, Mat currentFrame) {
+    public boolean detect(Object previousFrame, Object currentFrame) {
         long startTime = this.timeSupplier.get();
         boolean isDetected = this.motionDetector.detect(previousFrame, currentFrame);
         long duration = this.timeSupplier.get() - startTime;
