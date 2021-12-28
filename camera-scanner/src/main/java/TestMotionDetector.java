@@ -6,12 +6,12 @@ import java.util.function.Supplier;
 
 public class TestMotionDetector implements Detector {
 
-    private final Detector motionDetector;
+    private final MotionDetector motionDetector;
     private final Supplier<Long> timeSupplier;
     private final List<Long> durations;
 
-    public TestMotionDetector(Adapter adapter) {
-        this.motionDetector = new MotionDetector(adapter);
+    public TestMotionDetector() {
+        this.motionDetector = new MotionDetector();
         this.timeSupplier = System::currentTimeMillis;
         this.durations = new ArrayList<>();
     }
@@ -35,4 +35,5 @@ public class TestMotionDetector implements Detector {
         avg = sum / this.durations.size();
         return (long) avg;
     }
+
 }

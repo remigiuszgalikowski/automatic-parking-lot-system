@@ -1,39 +1,19 @@
-import net.sourceforge.tess4j.Tesseract;
 import org.opencv.core.*;
-import org.opencv.highgui.HighGui;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 public class PlateRecognizer implements Recognizer {
 
     private final Adapter adapter;
-    private final Tesseract tesseract;
-    private final Converter converter;
-    private final Supplier<Long> timeSupplier;
+    private final Converter imageConverter;
 
-    static double MINIMAL_MOVEMENT_RATIO = 3;
-
-    static long PLATE_RECOGNITION_TIME = 3 * 60 * 1000;
-    static long MOVEMENT_DETECTION_INTERVAL = 10 * 1000;
-    static long PLATE_RECOGNITION_INTERVAL = 1 * 1000;
-
-    public PlateRecognizer(Adapter adapter) {
+    public PlateRecognizer(Adapter adapter, Converter converter) {
         this.adapter = adapter;
-        this.tesseract = new Tesseract();
-        this.tesseract.setDatapath("C:\\Users\\HP\\IdeaProjects\\automatic-parking-lot-system\\libraries\\Tesseract-OCR\\tessdata");
-        this.converter = new Converter();
-        this.timeSupplier = System::currentTimeMillis;
+        this.imageConverter = converter;
     }
 
 //    @Override
@@ -61,6 +41,7 @@ public class PlateRecognizer implements Recognizer {
 
     @Override
     public BufferedImage recognize(Mat image) {
+
         Mat grayScale = new Mat();
         Imgproc.cvtColor(image, grayScale, Imgproc.COLOR_BGR2GRAY);
         Mat bilateral = new Mat();
@@ -85,9 +66,11 @@ public class PlateRecognizer implements Recognizer {
             double perimeter = Imgproc.arcLength(new MatOfPoint2f(mop.toArray()), true);
             Imgproc.approxPolyDP(new MatOfPoint2f(mop.toArray()), mopAprox, 0.018 * perimeter, true);
             if (isPlate(mopAprox)) {
-                 plateCandidate = bilateral.submat(this.createRectangle(mopAprox));
+                Rect rect = this.createRectangle(mopAprox);
+                plateCandidate = bilateral.submat(rect);
+                this.adapter.setHighlightedFrame(this.highlightPlate(image, rect));
             }
-            if (plateCandidate != null) return this.converter.toBufferedImage(plateCandidate);
+            if (plateCandidate != null) return this.imageConverter.toBufferedImage(plateCandidate);
         }
         return null;
 
@@ -145,4 +128,11 @@ public class PlateRecognizer implements Recognizer {
                 .min(Double::compare).orElse(0.0);
         return new Rect(new Point(leftBorder, bottomBorder), new Point(rightBorder, topBorder));
     }
+
+    private Mat highlightPlate(Mat mat, Rect rectangle) {
+        Mat highlightedMat = mat;
+        Imgproc.rectangle(highlightedMat, rectangle, new Scalar(0,255,0,255), 4);
+        return highlightedMat;
+    }
+
 }

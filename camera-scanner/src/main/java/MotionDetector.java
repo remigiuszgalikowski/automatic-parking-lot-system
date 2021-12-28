@@ -5,13 +5,9 @@ import org.opencv.imgproc.Imgproc;
 
 public class MotionDetector implements Detector {
 
-    private final Adapter adapter;
-
     static double MINIMAL_MOVEMENT_RATIO = 3;
 
-    public MotionDetector(Adapter adapter) {
-        this.adapter = adapter;
-    }
+    public MotionDetector() {}
 
     @Override
     public boolean detect(Mat previousFrame, Mat currentFrame) {
@@ -39,4 +35,5 @@ public class MotionDetector implements Detector {
 
         return valueFromMatrix > MINIMAL_MOVEMENT_RATIO;
     }
+
 }

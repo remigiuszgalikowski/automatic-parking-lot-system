@@ -1,15 +1,25 @@
+import net.sourceforge.tess4j.Tesseract;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.opencv.core.Mat;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class PlateRecognizerTests {
 
+    Debugger debugger;
+
+    Converter converter;
+    TestAdapterMat adapter;
+    TestMotionDetector motionDetector;
     TestPlateRecognizer plateRecognizer;
-    Adapter adapter;
+    Tesseract tesseract;
+    TestTesseractReader textReader;
 
     public PlateRecognizerTests() {
     }
@@ -17,17 +27,53 @@ public class PlateRecognizerTests {
     @Test
     public void a() {
         System.load("C:\\Users\\HP\\IdeaProjects\\automatic-parking-lot-system\\libraries\\opencv\\build\\java\\x64\\opencv_java454.dll");
-        adapter = new TestAdapterMat("C:\\Users\\HP\\IdeaProjects\\automatic-parking-lot-system\\camera-scanner\\src\\test\\resources\\videos\\GD123XK.mp4");
-        plateRecognizer = new TestPlateRecognizer(adapter);
-        assertTrue(adapter.videoCapture.isOpened());
-        //plateRecognizer.recognize();
-        //String text = plateRecognizer.recognize();
-        long detectMotionAvgTime = plateRecognizer.getAvgMotionDetectionTime();
-        long recognizePlateAvgTime = plateRecognizer.getAvgPlateRecognitionTime();
-        System.out.println("detectMotionAvgTime: " + detectMotionAvgTime);
-        System.out.println("recognizePlateAvgTime: " + recognizePlateAvgTime);
-        assertTrue(detectMotionAvgTime < recognizePlateAvgTime);
-        //assertEquals("GD123XK", text);
+
+        debugger = new Debugger();
+
+        converter = new Converter();
+        adapter = new TestAdapterMat("C:\\Users\\HP\\IdeaProjects\\automatic-parking-lot-system\\camera-scanner\\src\\test\\resources\\videos\\GD123XK.mp4",
+                debugger,
+                false);
+        motionDetector = new TestMotionDetector();
+        plateRecognizer = new TestPlateRecognizer(adapter, converter);
+        tesseract = new Tesseract();
+        textReader = new TestTesseractReader(tesseract);
+
+        Mat frame = null;
+        BufferedImage plate = null;
+
+        while (plate == null) {
+            this.waitForNextFrame(2400);
+            frame = (Mat) adapter.getFrame();
+            plate = plateRecognizer.recognize(frame);
+        }
+        assertNotNull(frame);
+        assertNotNull(plate);
+
+        String text;
+        text = textReader.read(plate);
+
+        long detectionDuration = this.motionDetector.getAvgDuration();
+        long recognitionDuration = plateRecognizer.getAvgDuration();
+        long readingDuration = textReader.getAvgDuration();
+        System.out.println("Detection time: " + detectionDuration);
+        System.out.println("Recognition time: " + recognitionDuration);
+        System.out.println("Reading time: " + readingDuration);
+
+
+
+        assertEquals("GD123XK", text);
+
+        this.debugger.debug((Mat) this.adapter.getHighlightedFrame(), "getHighlightedFrame()");
+
+    }
+
+    private void waitForNextFrame(long miliseconds) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(miliseconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadOpenCV() {

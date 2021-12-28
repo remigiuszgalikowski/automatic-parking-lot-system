@@ -1,64 +1,41 @@
 import org.opencv.core.Mat;
+import org.opencv.videoio.VideoCapture;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class TestPlateRecognizer implements Detector, Recognizer {
+public class TestPlateRecognizer implements Recognizer {
 
-    private final Recognizer plateRecognizer;
+    private final PlateRecognizer plateRecognizer;
     private final Supplier<Long> timeSupplier;
-
-    private List<Long> motionDetectionTimes;
-    private List<Long> plateRecognitionTimes;
+    private final List<Long> durations;
 
 
-    public TestPlateRecognizer(Adapter adapter) {
-        this.plateRecognizer = new PlateRecognizer(adapter);
+    public TestPlateRecognizer(Adapter adapter, Converter converter) {
+        this.plateRecognizer = new PlateRecognizer(adapter, converter);
         this.timeSupplier = System::currentTimeMillis;
-        this.motionDetectionTimes = new ArrayList<>();
-        this.plateRecognitionTimes = new ArrayList<>();
-    }
-
-    @Override
-    public boolean detect(Mat frame1, Mat frame2) {
-        long startTime = this.timeSupplier.get();
-        boolean ifMoved = this.detect(frame1, frame2);
-        long timeStamp = this.timeSupplier.get() - startTime;
-        this.motionDetectionTimes.add(timeStamp);
-        System.out.println("motionDetect: " + timeStamp);
-        return ifMoved;
+        this.durations = new ArrayList<>();
     }
 
     @Override
     public BufferedImage recognize(Mat image) {
-
         long startTime = this.timeSupplier.get();
-        BufferedImage plateText = this.plateRecognizer.recognize(image);
-        long timeStamp = this.timeSupplier.get() - startTime;
-        this.plateRecognitionTimes.add(timeStamp);
-        System.out.println("plateRecog: " + timeStamp);
-        return null;
+        BufferedImage recognizedImage = this.plateRecognizer.recognize(image);
+        long duration = this.timeSupplier.get() - startTime;
+        this.durations.add(duration);
+        return recognizedImage;
     }
 
-    public long getAvgPlateRecognitionTime() {
+    public long getAvgDuration() {
         double sum = 0;
-        for (long time : this.plateRecognitionTimes)
+        for (long duration : this.durations)
         {
-            sum += time ;
+            sum += duration;
         }
-        double avg = sum / this.plateRecognitionTimes.size();
-        return (long) avg;
-    }
-
-    public long getAvgMotionDetectionTime() {
-        double sum = 0;
-        for (long time : this.motionDetectionTimes)
-        {
-            sum += time ;
-        }
-        double avg = sum / this.motionDetectionTimes.size();
+        double avg;
+        avg = sum / this.durations.size();
         return (long) avg;
     }
 

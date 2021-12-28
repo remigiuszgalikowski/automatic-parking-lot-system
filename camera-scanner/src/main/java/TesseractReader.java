@@ -4,6 +4,7 @@ import net.sourceforge.tess4j.TesseractException;
 import java.awt.image.BufferedImage;
 
 public class TesseractReader implements Reader {
+
     private final Tesseract tesseract;
 
     public TesseractReader(Tesseract tesseract) {
@@ -23,4 +24,5 @@ public class TesseractReader implements Reader {
             return null;
         }
     }
+
 }

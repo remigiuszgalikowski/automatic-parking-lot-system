@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class TestTesseractReader implements Reader {
+
     private final Reader reader;
     private final Supplier<Long> timeSupplier;
     private final List<Long> durations;
@@ -35,4 +36,5 @@ public class TestTesseractReader implements Reader {
         avg = sum / this.durations.size();
         return (long) avg;
     }
+
 }

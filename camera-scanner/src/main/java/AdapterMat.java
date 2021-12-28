@@ -1,31 +1,31 @@
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.videoio.VideoCapture;
 
 public class AdapterMat implements Adapter {
 
-    public final Size miniatureSize;
-    private Mat previousFrame;
-    private Mat previousFrameMiniature;
+    private final Size miniatureSize;
+    private final VideoCapture videoCapture;
+
+    private Mat highlightedFrame;
 
     public AdapterMat(String source) {
-        this.videoCapture.open(source);
+        this.videoCapture = new VideoCapture(source);
         this.miniatureSize = this.generateMiniatureSize();
-        this.previousFrame = getFrame();
-        this.previousFrameMiniature = getFrameMiniature();
+        this.highlightedFrame = new Mat();
     }
     public AdapterMat(int source) {
-        this.videoCapture.open(source);
+        this.videoCapture = new VideoCapture(source);
         this.miniatureSize = this.generateMiniatureSize();
-        this.previousFrame = getFrame();
-        this.previousFrameMiniature = getFrameMiniature();
+        this.highlightedFrame = new Mat();
     }
 
     @Override
     public Mat getFrame() {
         Mat mat = new Mat();
         this.videoCapture.retrieve(mat);
-        this.previousFrame = mat;
         return mat;
     }
 
@@ -34,8 +34,17 @@ public class AdapterMat implements Adapter {
         Mat mat = new Mat();
         this.videoCapture.retrieve(mat);
         Imgproc.resize(mat, mat, this.miniatureSize);
-        this.previousFrameMiniature = mat;
         return mat;
+    }
+
+    @Override
+    public Mat getHighlightedFrame() {
+        return this.highlightedFrame;
+    }
+
+    @Override
+    public void setHighlightedFrame(Object highlightedFrame) {
+        this.highlightedFrame = (Mat) highlightedFrame;
     }
 
     private Size generateMiniatureSize() {
@@ -47,4 +56,19 @@ public class AdapterMat implements Adapter {
         long miniatureWidth = Math.round(ratio * miniatureHeight);
         return new Size(miniatureWidth, miniatureHeight);
     }
+
+    public Size getMiniatureSize() { return this.miniatureSize; }
+
+    public double getVideoCaptureProperties(int propId) {
+        return this.videoCapture.get(propId);
+    }
+
+    public void videoCaptureGrab() {
+        this.videoCapture.grab();
+    }
+
+    public boolean isVideoCaptureOpened() {
+        return this.videoCapture.isOpened();
+    }
+
 }
