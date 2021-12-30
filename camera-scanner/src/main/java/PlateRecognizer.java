@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class PlateRecognizer implements Recognizer {
+public class PlateRecognizer implements Recognizer<Mat, BufferedImage> {
 
     private final Adapter adapter;
     private final Converter imageConverter;
@@ -40,10 +40,10 @@ public class PlateRecognizer implements Recognizer {
 //    }
 
     @Override
-    public BufferedImage recognize(Object image) {
+    public BufferedImage recognize(Mat image) {
 
         Mat grayScale = new Mat();
-        Imgproc.cvtColor((Mat) image, grayScale, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor( image, grayScale, Imgproc.COLOR_BGR2GRAY);
         Mat bilateral = new Mat();
         Imgproc.bilateralFilter(grayScale, bilateral, 13, 15, 15);
         Mat canny = new Mat();
@@ -68,7 +68,7 @@ public class PlateRecognizer implements Recognizer {
             if (isPlate(mopAprox)) {
                 Rect rect = this.createRectangle(mopAprox);
                 plateCandidate = bilateral.submat(rect);
-                this.adapter.setHighlightedFrame(this.highlightPlate((Mat) image, rect));
+                this.adapter.setHighlightedFrame(this.highlightPlate( image, rect));
             }
             if (plateCandidate != null) return this.imageConverter.toBufferedImage(plateCandidate);
         }

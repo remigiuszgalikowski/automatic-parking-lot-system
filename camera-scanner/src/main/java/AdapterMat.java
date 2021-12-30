@@ -1,10 +1,9 @@
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
-public class AdapterMat implements Adapter {
+public class AdapterMat implements Adapter<Mat> {
 
     private final Size miniatureSize;
     private final VideoCapture videoCapture;
@@ -43,7 +42,7 @@ public class AdapterMat implements Adapter {
     }
 
     @Override
-    public void setHighlightedFrame(Object highlightedFrame) {
+    public void setHighlightedFrame(Mat highlightedFrame) {
         this.highlightedFrame = (Mat) highlightedFrame;
     }
 

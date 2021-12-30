@@ -1,3 +1,3 @@
-public interface Recognizer {
-    Object recognize(Object image);
+public interface Recognizer<T,X> {
+    X recognize(T image);
 }

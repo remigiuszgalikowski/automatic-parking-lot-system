@@ -1,3 +1,3 @@
-public interface Detector {
-    boolean detect(Object previousFrame, Object currentFrame);
+public interface Detector<T> {
+    boolean detect(T previousFrame, T currentFrame);
 }

@@ -1,6 +1,5 @@
 import net.sourceforge.tess4j.Tesseract;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.opencv.core.Mat;
 
 import java.awt.image.BufferedImage;
@@ -41,10 +40,16 @@ public class PlateRecognizerTests {
 
         Mat frame = null;
         BufferedImage plate = null;
-
+        Mat miniature1 = null;
+        Mat miniature2 = null;
+        do {
+            miniature1 = adapter.getFrameMiniature();
+            this.waitForNextFrame(300);
+            miniature2 = adapter.getFrameMiniature();
+        } while(!motionDetector.detect(miniature1, miniature2));
         while (plate == null) {
             this.waitForNextFrame(2400);
-            frame = (Mat) adapter.getFrame();
+            frame = adapter.getFrame();
             plate = plateRecognizer.recognize(frame);
         }
         assertNotNull(frame);

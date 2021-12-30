@@ -1,12 +1,11 @@
 import org.opencv.core.Mat;
-import org.opencv.videoio.VideoCapture;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class TestPlateRecognizer implements Recognizer {
+public class TestPlateRecognizer implements Recognizer<Mat, BufferedImage> {
 
     private final PlateRecognizer plateRecognizer;
     private final Supplier<Long> timeSupplier;
@@ -20,7 +19,7 @@ public class TestPlateRecognizer implements Recognizer {
     }
 
     @Override
-    public BufferedImage recognize(Object image) {
+    public BufferedImage recognize(Mat image) {
         long startTime = this.timeSupplier.get();
         BufferedImage recognizedImage = this.plateRecognizer.recognize(image);
         long duration = this.timeSupplier.get() - startTime;

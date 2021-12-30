@@ -1,3 +1,3 @@
-public interface Reader {
-    String read(Object image);
+public interface Reader<T> {
+    String read(T image);
 }

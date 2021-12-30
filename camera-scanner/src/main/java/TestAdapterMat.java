@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import static org.opencv.videoio.Videoio.CAP_PROP_FPS;
 
-public class TestAdapterMat implements Adapter {
+public class TestAdapterMat implements Adapter<Mat> {
 
     static double MILLISECONDS_PER_FRAME;
 
@@ -58,7 +58,7 @@ public class TestAdapterMat implements Adapter {
     }
 
     @Override
-    public void setHighlightedFrame(Object highlightedFrame) {
+    public void setHighlightedFrame(Mat highlightedFrame) {
         this.adapter.setHighlightedFrame(highlightedFrame);
     }
 
