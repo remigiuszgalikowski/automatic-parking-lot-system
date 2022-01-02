@@ -4,7 +4,7 @@ import org.opencv.core.Mat;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,6 +13,8 @@ public class PlateRecognizerTests {
 
     Debugger debugger;
 
+    Supplier<Long> timeSupplier;
+    Timer timer;
     Converter converter;
     TestAdapterMat adapter;
     TestMotionDetector motionDetector;
@@ -29,30 +31,27 @@ public class PlateRecognizerTests {
 
         debugger = new Debugger();
 
+        timeSupplier = System::currentTimeMillis;
+        timer = new Timer();
         converter = new Converter();
         adapter = new TestAdapterMat("C:\\Users\\HP\\IdeaProjects\\automatic-parking-lot-system\\camera-scanner\\src\\test\\resources\\videos\\GD123XK.mp4",
+                timeSupplier,
                 debugger,
-                false);
-        motionDetector = new TestMotionDetector();
-        plateRecognizer = new TestPlateRecognizer(adapter, converter);
+                true);
+        motionDetector = new TestMotionDetector(adapter, timeSupplier, timer,300);
+        plateRecognizer = new TestPlateRecognizer(adapter, timeSupplier, converter);
         tesseract = new Tesseract();
-        textReader = new TestTesseractReader(tesseract);
+        textReader = new TestTesseractReader(tesseract, timeSupplier);
 
-        Mat frame = null;
         BufferedImage plate = null;
-        Mat miniature1 = null;
-        Mat miniature2 = null;
+        int detectorIterator = 0;
         do {
-            miniature1 = adapter.getFrameMiniature();
-            this.waitForNextFrame(300);
-            miniature2 = adapter.getFrameMiniature();
-        } while(!motionDetector.detect(miniature1, miniature2));
+            System.out.println(++detectorIterator);
+        } while(!motionDetector.detect());
         while (plate == null) {
-            this.waitForNextFrame(2400);
-            frame = adapter.getFrame();
-            plate = plateRecognizer.recognize(frame);
+            timer.await(500);
+            plate = plateRecognizer.recognize();
         }
-        assertNotNull(frame);
         assertNotNull(plate);
 
         String text;
@@ -69,16 +68,6 @@ public class PlateRecognizerTests {
 
         assertEquals("GD123XK", text);
 
-        this.debugger.debug((Mat) this.adapter.getHighlightedFrame(), "getHighlightedFrame()");
-
-    }
-
-    private void waitForNextFrame(long miliseconds) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(miliseconds);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     private void loadOpenCV() {

@@ -3,22 +3,23 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
+import static org.opencv.videoio.Videoio.CAP_PROP_FPS;
+
 public class AdapterMat implements Adapter<Mat> {
 
     private final Size miniatureSize;
     private final VideoCapture videoCapture;
-
-    private Mat highlightedFrame;
+    private final long millisecondsPerFrame;
 
     public AdapterMat(String source) {
         this.videoCapture = new VideoCapture(source);
         this.miniatureSize = this.generateMiniatureSize();
-        this.highlightedFrame = new Mat();
+        this.millisecondsPerFrame = (long) (1000 / this.videoCapture.get(CAP_PROP_FPS));
     }
     public AdapterMat(int source) {
         this.videoCapture = new VideoCapture(source);
         this.miniatureSize = this.generateMiniatureSize();
-        this.highlightedFrame = new Mat();
+        this.millisecondsPerFrame = (long) (1000 / this.videoCapture.get(CAP_PROP_FPS));
     }
 
     @Override
@@ -37,13 +38,8 @@ public class AdapterMat implements Adapter<Mat> {
     }
 
     @Override
-    public Mat getHighlightedFrame() {
-        return this.highlightedFrame;
-    }
-
-    @Override
-    public void setHighlightedFrame(Mat highlightedFrame) {
-        this.highlightedFrame = (Mat) highlightedFrame;
+    public long getTimeBetweenFrames() {
+        return this.millisecondsPerFrame;
     }
 
     private Size generateMiniatureSize() {
@@ -57,10 +53,6 @@ public class AdapterMat implements Adapter<Mat> {
     }
 
     public Size getMiniatureSize() { return this.miniatureSize; }
-
-    public double getVideoCaptureProperties(int propId) {
-        return this.videoCapture.get(propId);
-    }
 
     public void videoCaptureGrab() {
         this.videoCapture.grab();

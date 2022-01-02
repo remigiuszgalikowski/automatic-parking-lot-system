@@ -3,11 +3,7 @@ import org.opencv.core.Size;
 
 import java.util.function.Supplier;
 
-import static org.opencv.videoio.Videoio.CAP_PROP_FPS;
-
 public class TestAdapterMat implements Adapter<Mat> {
-
-    static double MILLISECONDS_PER_FRAME;
 
     private final AdapterMat adapter;
     private final Supplier<Long> timeSupplier;
@@ -21,13 +17,12 @@ public class TestAdapterMat implements Adapter<Mat> {
     private Mat lastFrame;
     private Mat lastFrameMiniature;
 
-    public TestAdapterMat(String source, Debugger debugger, boolean debug) {
+    public TestAdapterMat(String source, Supplier<Long> timeSupplier, Debugger debugger, boolean debug) {
         this.adapter = new AdapterMat(source);
         this.lastFrame = this.adapter.getFrame();
         this.lastFrameMiniature = this.adapter.getFrameMiniature();
-        this.timeSupplier = System::currentTimeMillis;
+        this.timeSupplier = timeSupplier;
         this.timeOfFirstFrame = timeSupplier.get();
-        MILLISECONDS_PER_FRAME = 1000 / this.adapter.getVideoCaptureProperties(CAP_PROP_FPS);
         this.debugger = debugger;
         this.debugMode = debug;
     }
@@ -51,23 +46,16 @@ public class TestAdapterMat implements Adapter<Mat> {
     }
 
     @Override
-    public Mat getHighlightedFrame() {
-        Mat highlightedFrame = this.adapter.getHighlightedFrame();
-        if (this.debugMode) {this.debugger.debug(highlightedFrame, "getHighlightedFrame()");}
-        return highlightedFrame;
-    }
-
-    @Override
-    public void setHighlightedFrame(Mat highlightedFrame) {
-        this.adapter.setHighlightedFrame(highlightedFrame);
+    public long getTimeBetweenFrames() {
+        return this.adapter.getTimeBetweenFrames();
     }
 
     private void skipFrames() {
         double timeSinceFirstFrame = timeSupplier.get() - this.timeOfFirstFrame;
-        this.currentFrameNumber = (int) Math.round(timeSinceFirstFrame / MILLISECONDS_PER_FRAME);
+        this.currentFrameNumber = (int) Math.round(timeSinceFirstFrame / this.getTimeBetweenFrames());
         int numberOfFramesToSkip = this.currentFrameNumber - this.lastFrameNumber - 1;
         this.lastFrameNumber = this.currentFrameNumber + numberOfFramesToSkip + 1;
-        for (int i = 0; i < numberOfFramesToSkip; i++) this.adapter.videoCaptureGrab();
+        for (int i = 0; i < numberOfFramesToSkip; i++) this.videoCaptureGrab();
     }
 
     private Mat determineFrame() {
@@ -86,10 +74,6 @@ public class TestAdapterMat implements Adapter<Mat> {
 
     public Size getMiniatureSize() {
         return this.adapter.getMiniatureSize();
-    }
-
-    public double getVideoCaptureProperties(int propId) {
-        return this.adapter.getVideoCaptureProperties(propId);
     }
 
     public void videoCaptureGrab() {

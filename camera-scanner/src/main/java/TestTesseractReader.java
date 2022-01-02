@@ -5,20 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class TestTesseractReader implements Reader {
+public class TestTesseractReader implements Reader<BufferedImage> {
 
-    private final Reader reader;
+    private final Reader<BufferedImage> reader;
     private final Supplier<Long> timeSupplier;
     private final List<Long> durations;
 
-    public TestTesseractReader(Tesseract tesseract) {
+    public TestTesseractReader(Tesseract tesseract, Supplier<Long> timeSupplier) {
         this.reader = new TesseractReader(tesseract);
-        this.timeSupplier = System::currentTimeMillis;
+        this.timeSupplier = timeSupplier;
         this.durations = new ArrayList<>();
     }
 
     @Override
-    public String read(Object bufferedImage) {
+    public String read(BufferedImage bufferedImage) {
         long startTime = this.timeSupplier.get();
         String text = this.reader.read(bufferedImage);
         long duration = this.timeSupplier.get() - startTime;

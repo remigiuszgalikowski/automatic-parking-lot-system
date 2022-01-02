@@ -10,16 +10,16 @@ public class TestMotionDetector implements Detector {
     private final Supplier<Long> timeSupplier;
     private final List<Long> durations;
 
-    public TestMotionDetector() {
-        this.motionDetector = new MotionDetector();
-        this.timeSupplier = System::currentTimeMillis;
+    public TestMotionDetector(Adapter<Mat> adapter, Supplier<Long> timeSupplier, Timer timer, long timeBetweenFrames) {
+        this.motionDetector = new MotionDetector(adapter, timer, timeBetweenFrames);
+        this.timeSupplier = timeSupplier;
         this.durations = new ArrayList<>();
     }
 
     @Override
-    public boolean detect(Object previousFrame, Object currentFrame) {
+    public boolean detect() {
         long startTime = this.timeSupplier.get();
-        boolean isDetected = this.motionDetector.detect(previousFrame, currentFrame);
+        boolean isDetected = this.motionDetector.detect();
         long duration = this.timeSupplier.get() - startTime;
         this.durations.add(duration);
         return isDetected;

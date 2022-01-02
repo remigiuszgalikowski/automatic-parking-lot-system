@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/core-glue" />
             <option value="$PROJECT_DIR$/gate-opener" />
             <option value="$PROJECT_DIR$/plate-app" />
+            <option value="$PROJECT_DIR$/video-stream" />
           </set>
         </option>
       </GradleProjectSettings>

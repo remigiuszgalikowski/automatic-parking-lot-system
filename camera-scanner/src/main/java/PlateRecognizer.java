@@ -6,14 +6,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class PlateRecognizer implements Recognizer<Mat, BufferedImage> {
+public class PlateRecognizer implements Recognizer<BufferedImage> {
 
-    private final Adapter adapter;
+    private final Adapter<Mat> adapter;
     private final Converter imageConverter;
 
-    public PlateRecognizer(Adapter adapter, Converter converter) {
+    private Rect plateCoords;
+
+    public PlateRecognizer(Adapter<Mat> adapter, Converter converter) {
         this.adapter = adapter;
         this.imageConverter = converter;
+        this.plateCoords = null;
     }
 
 //    @Override
@@ -40,10 +43,12 @@ public class PlateRecognizer implements Recognizer<Mat, BufferedImage> {
 //    }
 
     @Override
-    public BufferedImage recognize(Mat image) {
+    public BufferedImage recognize() {
+
+        Mat rawFrame = this.adapter.getFrame();
 
         Mat grayScale = new Mat();
-        Imgproc.cvtColor( image, grayScale, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor(rawFrame , grayScale, Imgproc.COLOR_BGR2GRAY);
         Mat bilateral = new Mat();
         Imgproc.bilateralFilter(grayScale, bilateral, 13, 15, 15);
         Mat canny = new Mat();
@@ -66,9 +71,8 @@ public class PlateRecognizer implements Recognizer<Mat, BufferedImage> {
             double perimeter = Imgproc.arcLength(new MatOfPoint2f(mop.toArray()), true);
             Imgproc.approxPolyDP(new MatOfPoint2f(mop.toArray()), mopAprox, 0.018 * perimeter, true);
             if (isPlate(mopAprox)) {
-                Rect rect = this.createRectangle(mopAprox);
-                plateCandidate = bilateral.submat(rect);
-                this.adapter.setHighlightedFrame(this.highlightPlate( image, rect));
+                this.plateCoords = this.createRectangle(mopAprox);
+                plateCandidate = bilateral.submat(this.plateCoords);
             }
             if (plateCandidate != null) return this.imageConverter.toBufferedImage(plateCandidate);
         }
@@ -129,10 +133,7 @@ public class PlateRecognizer implements Recognizer<Mat, BufferedImage> {
         return new Rect(new Point(leftBorder, bottomBorder), new Point(rightBorder, topBorder));
     }
 
-    private Mat highlightPlate(Mat mat, Rect rectangle) {
-        Mat highlightedMat = mat;
-        Imgproc.rectangle(highlightedMat, rectangle, new Scalar(0,255,0,255), 4);
-        return highlightedMat;
+    public Rect getPlateCoords() {
+        return this.plateCoords;
     }
-
 }

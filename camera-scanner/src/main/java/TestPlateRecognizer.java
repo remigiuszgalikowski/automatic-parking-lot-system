@@ -5,23 +5,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class TestPlateRecognizer implements Recognizer<Mat, BufferedImage> {
+public class TestPlateRecognizer implements Recognizer<BufferedImage> {
 
     private final PlateRecognizer plateRecognizer;
     private final Supplier<Long> timeSupplier;
     private final List<Long> durations;
 
 
-    public TestPlateRecognizer(Adapter adapter, Converter converter) {
+    public TestPlateRecognizer(Adapter<Mat> adapter, Supplier<Long> timeSupplier, Converter converter) {
         this.plateRecognizer = new PlateRecognizer(adapter, converter);
-        this.timeSupplier = System::currentTimeMillis;
+        this.timeSupplier = timeSupplier;
         this.durations = new ArrayList<>();
     }
 
     @Override
-    public BufferedImage recognize(Mat image) {
+    public BufferedImage recognize() {
         long startTime = this.timeSupplier.get();
-        BufferedImage recognizedImage = this.plateRecognizer.recognize(image);
+        BufferedImage recognizedImage = this.plateRecognizer.recognize();
         long duration = this.timeSupplier.get() - startTime;
         this.durations.add(duration);
         return recognizedImage;

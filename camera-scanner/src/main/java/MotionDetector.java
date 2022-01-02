@@ -5,21 +5,32 @@ import org.opencv.imgproc.Imgproc;
 
 public class MotionDetector implements Detector {
 
+    private final Adapter<Mat> adapter;
+    private final Timer timer;
+    private final long timeBetweenFrames;
     static double MINIMAL_MOVEMENT_RATIO = 3;
 
-    public MotionDetector() {}
+    public MotionDetector(Adapter<Mat> adapter, Timer timer, long timeBetweenFrames) {
+        this.adapter = adapter;
+        this.timer = timer;
+        this.timeBetweenFrames = timeBetweenFrames;
+    }
 
     @Override
-    public boolean detect(Object previousFrame, Object currentFrame) {
-
-        Mat frame1 = new Mat();
-        Mat frame2 = new Mat();
-        Imgproc.cvtColor((Mat) currentFrame, frame1, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.cvtColor((Mat) previousFrame, frame2, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.GaussianBlur(frame1, frame1, new Size(21, 21), 0);
-        Imgproc.GaussianBlur(frame2, frame2, new Size(21, 21), 0);
+    public boolean detect() {
+        Mat frame1 = this.adapter.getFrameMiniature();
+        this.timer.await(timeBetweenFrames);
+        Mat frame2 = this.adapter.getFrameMiniature();
+        Mat gray1 = new Mat();
+        Mat gray2 = new Mat();
+        Imgproc.cvtColor(frame1, gray1, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor(frame2, gray2, Imgproc.COLOR_BGR2GRAY);
+        Mat blur1 = new Mat();
+        Mat blur2 = new Mat();
+        Imgproc.GaussianBlur(gray1, blur1, new Size(21, 21), 0);
+        Imgproc.GaussianBlur(gray2, blur2, new Size(21, 21), 0);
         Mat subtraction = new Mat();
-        Core.absdiff(frame1, frame2, subtraction);
+        Core.absdiff(blur1, blur2, subtraction);
 
         double valueFromMatrix = 0;
 

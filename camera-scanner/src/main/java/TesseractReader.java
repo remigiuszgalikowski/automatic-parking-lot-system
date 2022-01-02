@@ -3,7 +3,7 @@ import net.sourceforge.tess4j.TesseractException;
 
 import java.awt.image.BufferedImage;
 
-public class TesseractReader implements Reader {
+public class TesseractReader implements Reader<BufferedImage> {
 
     private final Tesseract tesseract;
 
@@ -13,7 +13,7 @@ public class TesseractReader implements Reader {
     }
 
     @Override
-    public String read(Object image) {
+    public String read(BufferedImage image) {
         String plateText;
         try {
             plateText = this.tesseract.doOCR((BufferedImage) image);
