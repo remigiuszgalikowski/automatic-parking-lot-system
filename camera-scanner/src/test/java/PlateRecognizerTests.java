@@ -37,20 +37,17 @@ public class PlateRecognizerTests {
         adapter = new TestAdapterMat("C:\\Users\\HP\\IdeaProjects\\automatic-parking-lot-system\\camera-scanner\\src\\test\\resources\\videos\\GD123XK.mp4",
                 timeSupplier,
                 debugger,
-                true);
-        motionDetector = new TestMotionDetector(adapter, timeSupplier, timer,300);
+                false);
+        motionDetector = new TestMotionDetector(adapter, timeSupplier, timer,50);
         plateRecognizer = new TestPlateRecognizer(adapter, timeSupplier, converter);
         tesseract = new Tesseract();
         textReader = new TestTesseractReader(tesseract, timeSupplier);
 
         BufferedImage plate = null;
-        int detectorIterator = 0;
-        do {
-            System.out.println(++detectorIterator);
-        } while(!motionDetector.detect());
+        while(!motionDetector.detect()) {}
         while (plate == null) {
-            timer.await(500);
             plate = plateRecognizer.recognize();
+            timer.await(300);
         }
         assertNotNull(plate);
 
