@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    implementation files('../libraries/opencv/build/java/opencv-454.jar')
+    //implementation 'javax.media:jmf:2.1.1e'
+    implementation 'io.humble:humble-video-all:0.3.0'
+    implementation project(':camera-scanner')
+}
+
+test {
+    useJUnitPlatform()
+}

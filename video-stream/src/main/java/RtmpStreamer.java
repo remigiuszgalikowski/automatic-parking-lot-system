@@ -8,6 +8,6 @@ public class RtmpStreamer implements Streamer {
 
     @Override
     public void stream() {
-        //ToDo streaming via RTSP protocol
+        //ToDo streaming via RTMP protocol
     }
 }

@@ -5,13 +5,14 @@ import org.opencv.imgproc.Imgproc;
 
 import java.awt.image.BufferedImage;
 
+
 public class FramePreparer implements Preparer {
 
     private final Adapter<Mat> adapter;
     private final Converter converter;
     private final PlateRecognizer plateRecognizer;
 
-    public FramePreparer(Adapter adapter, Converter converter, PlateRecognizer plateRecognizer) {
+    public FramePreparer(Adapter<Mat> adapter, Converter converter, PlateRecognizer plateRecognizer) {
         this.adapter = adapter;
         this.plateRecognizer = plateRecognizer;
         this.converter = converter;
