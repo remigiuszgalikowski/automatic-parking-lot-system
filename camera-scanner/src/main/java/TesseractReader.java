@@ -9,7 +9,6 @@ public class TesseractReader implements Reader<BufferedImage> {
 
     public TesseractReader(Tesseract tesseract) {
         this.tesseract = tesseract;
-        this.tesseract.setDatapath("C:\\Users\\HP\\IdeaProjects\\automatic-parking-lot-system\\libraries\\Tesseract-OCR\\tessdata");
     }
 
     @Override
@@ -17,7 +16,8 @@ public class TesseractReader implements Reader<BufferedImage> {
         String plateText;
         try {
             plateText = this.tesseract.doOCR((BufferedImage) image);
-            plateText = plateText.replaceAll("\\s+","");
+            //plateText = plateText.replaceAll("\\s+","");
+            plateText = plateText.replaceAll("\\W+","");
             return plateText;
         } catch (TesseractException e) {
             e.printStackTrace();

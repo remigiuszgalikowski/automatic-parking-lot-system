@@ -1,7 +1,4 @@
 rootProject.name = 'automatic-parking-lot-system'
 include 'camera-scanner'
-include 'plate-app'
-include 'gate-opener'
 include 'core-glue'
 include 'video-stream'
-

@@ -10,9 +10,9 @@ public class FramePreparer implements Preparer {
 
     private final Adapter<Mat> adapter;
     private final Converter converter;
-    private final PlateRecognizer plateRecognizer;
+    private final PlateFinder plateRecognizer;
 
-    public FramePreparer(Adapter<Mat> adapter, Converter converter, PlateRecognizer plateRecognizer) {
+    public FramePreparer(Adapter<Mat> adapter, Converter converter, PlateFinder plateRecognizer) {
         this.adapter = adapter;
         this.plateRecognizer = plateRecognizer;
         this.converter = converter;
