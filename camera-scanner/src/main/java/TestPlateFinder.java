@@ -11,7 +11,6 @@ public class TestPlateFinder implements Finder<BufferedImage, Mat> {
     private final Supplier<Long> timeSupplier;
     private final List<Long> durations;
 
-
     public TestPlateFinder(Supplier<Long> timeSupplier, Converter converter) {
         this.plateRecognizer = new PlateFinder(converter);
         this.timeSupplier = timeSupplier;

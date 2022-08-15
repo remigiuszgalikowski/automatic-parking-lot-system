@@ -11,45 +11,33 @@ import java.io.IOException;
 
 public class OutputManager {
 
-    private int debugCounter = 0;
-
     private final Converter imageConverter;
+
+    private int debugCounter = 0;
 
     public OutputManager(Converter converter) {
         this.imageConverter = converter;
     }
 
     public void show(MatOfPoint2f mop, Mat inputMat, String name) {
-        Mat outputMat = inputMat;
-        Imgproc.line(outputMat, mop.toList().get(0), mop.toList().get(1), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(1), mop.toList().get(2), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(2), mop.toList().get(3), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(3), mop.toList().get(0), new Scalar(255, 255, 255, 255), 3);
-        HighGui.imshow("debug("+ this.debugCounter + ")" + name, outputMat);
+        outline(mop, inputMat);
+        HighGui.imshow("debug("+ this.debugCounter + ")" + name, inputMat);
         HighGui.waitKey();
         this.debugCounter++;
     }
-
     public void show(MatOfPoint2f mop, Mat inputMat) {
-        Mat outputMat = inputMat;
-        Imgproc.line(outputMat, mop.toList().get(0), mop.toList().get(1), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(1), mop.toList().get(2), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(2), mop.toList().get(3), new Scalar(255, 255, 255, 255), 3);
-        Imgproc.line(outputMat, mop.toList().get(3), mop.toList().get(0), new Scalar(255, 255, 255, 255), 3);
-        HighGui.imshow("debug("+ this.debugCounter + ")", outputMat);
+        outline(mop, inputMat);
+        HighGui.imshow("debug("+ this.debugCounter + ")", inputMat);
         HighGui.waitKey();
         this.debugCounter++;
     }
     public void show(Mat inputMat, String name) {
-        Mat outputMat = inputMat;
-        HighGui.imshow("debug("+ this.debugCounter + ")" + name, outputMat);
+        HighGui.imshow("debug("+ this.debugCounter + ")" + name, inputMat);
         HighGui.waitKey();
         this.debugCounter++;
     }
-
     public void show(Mat inputMat) {
-        Mat outputMat = inputMat;
-        HighGui.imshow("debug("+ this.debugCounter + ")", outputMat);
+        HighGui.imshow("debug("+ this.debugCounter + ")", inputMat);
         HighGui.waitKey();
         this.debugCounter++;
     }
@@ -59,9 +47,15 @@ public class OutputManager {
         File outputfile = new File(folderPath + '/' + filename);
         ImageIO.write(image, filename.substring(filename.indexOf(".")+1), outputfile);
     }
-
     public void save(BufferedImage image, String folderPath, String filename) throws IOException {
         File outputfile = new File(folderPath + '/' + filename);
         ImageIO.write(image, filename.substring(filename.indexOf(".")+1), outputfile);
+    }
+
+    private void outline(MatOfPoint2f mop, Mat inputMat) {
+        Imgproc.line(inputMat, mop.toList().get(0), mop.toList().get(1), new Scalar(255, 255, 255, 255), 3);
+        Imgproc.line(inputMat, mop.toList().get(1), mop.toList().get(2), new Scalar(255, 255, 255, 255), 3);
+        Imgproc.line(inputMat, mop.toList().get(2), mop.toList().get(3), new Scalar(255, 255, 255, 255), 3);
+        Imgproc.line(inputMat, mop.toList().get(3), mop.toList().get(0), new Scalar(255, 255, 255, 255), 3);
     }
 }
