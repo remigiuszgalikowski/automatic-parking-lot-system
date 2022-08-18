@@ -1,8 +1,10 @@
 import org.opencv.core.*;
+import org.opencv.highgui.HighGui;
 import org.opencv.imgproc.Imgproc;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -19,16 +21,13 @@ public class PlateFinder implements Finder<BufferedImage, Mat> {
 
     @Override
     public BufferedImage find(Mat input) {
-
         Mat grayScale = new Mat();
         Imgproc.cvtColor(input , grayScale, Imgproc.COLOR_BGR2GRAY);
 
         Mat bilateral = new Mat();
-        Imgproc.bilateralFilter(grayScale, bilateral, 13, 15, 15);
-
+        Imgproc.bilateralFilter(grayScale, bilateral, 13, 44, 44);
         Mat canny = new Mat();
-        Imgproc.Canny(bilateral, canny, 30, 200);
-
+        Imgproc.Canny(bilateral, canny, 50, 200);
         Mat hierarchyMat = new Mat();
         List<MatOfPoint> contours = new ArrayList<>();
         Imgproc.findContours(canny, contours, hierarchyMat, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -39,7 +38,8 @@ public class PlateFinder implements Finder<BufferedImage, Mat> {
                 return (int) ((Imgproc.contourArea(mop1) - Imgproc.contourArea(mop2)) * -1);
             }
         });
-        contours = contours.subList(0,10);
+        if (contours.toArray().length > 11) {contours = contours.subList(0,10);}
+
 
         Mat plateCandidate = null;
         for (MatOfPoint mop : contours) {
@@ -54,6 +54,8 @@ public class PlateFinder implements Finder<BufferedImage, Mat> {
         }
         return null;
 
+    }
+    public Rect getPlateCoords() { return this.plateCoords;
     }
 
     private boolean isPlate(MatOfPoint2f suspectedPlate) {
@@ -72,17 +74,15 @@ public class PlateFinder implements Finder<BufferedImage, Mat> {
         double ratioAB = sides.get(0) / sides.get(2);
         double ratioCD = sides.get(1) / sides.get(3);
 
-        var maxPlateRatio = 5.0;
+        var maxPlateRatio = 5.5;
         var minPlateRatio = 4.0;
 
         return maxPlateRatio > ratioAB && ratioAB > minPlateRatio
                 && maxPlateRatio > ratioCD && ratioCD > minPlateRatio;
     }
-
     private double distance(org.opencv.core.Point point1, org.opencv.core.Point point2) {
         return Math.sqrt((point1.x - point2.x) * (point1.x - point2.x) + (point1.y - point2.y) * (point1.y - point2.y));
     }
-
     private Rect createRectangle(MatOfPoint2f matOfPoints) {
         List<Point> points = matOfPoints.toList();
         var rightBorder = points.stream()
@@ -98,9 +98,5 @@ public class PlateFinder implements Finder<BufferedImage, Mat> {
                 .map(point -> point.y)
                 .min(Double::compare).orElse(0.0);
         return new Rect(new Point(leftBorder, bottomBorder), new Point(rightBorder, topBorder));
-    }
-
-    public Rect getPlateCoords() {
-        return this.plateCoords;
     }
 }

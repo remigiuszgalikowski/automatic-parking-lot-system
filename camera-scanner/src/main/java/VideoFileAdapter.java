@@ -1,7 +1,9 @@
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
+
 import java.util.function.Supplier;
 
-public class VideoFileAdapter implements Adapter<Mat> {
+public class VideoFileAdapter implements Adapter<Mat, Size> {
 
     private final VideoStreamAdapter adapter;
     private final Supplier<Long> timeSupplier;
@@ -31,6 +33,8 @@ public class VideoFileAdapter implements Adapter<Mat> {
     public long getMillisecondsPerFrame() {
         return this.adapter.getMillisecondsPerFrame();
     }
+    @Override
+    public Size getFrameSize() {return adapter.getFrameSize();}
     public void skipFrame() {
         this.adapter.skipFrame();
     }

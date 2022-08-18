@@ -16,7 +16,6 @@ public class TesseractReader implements Reader<BufferedImage> {
         String plateText;
         try {
             plateText = this.tesseract.doOCR((BufferedImage) image);
-            //plateText = plateText.replaceAll("\\s+","");
             plateText = plateText.replaceAll("\\W+","");
             return plateText;
         } catch (TesseractException e) {
@@ -24,5 +23,4 @@ public class TesseractReader implements Reader<BufferedImage> {
             return null;
         }
     }
-
 }
