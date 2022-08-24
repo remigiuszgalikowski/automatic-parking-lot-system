@@ -1,18 +1,15 @@
 import net.sourceforge.tess4j.Tesseract;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.Scalar;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -31,7 +28,6 @@ public class PlateRecognizerTests {
 
     private VideoStreamAdapter streamAdapter;
     private VideoFileAdapter fileAdapter;
-    private Streamer streamer;
 
     public PlateRecognizerTests() {
         System.load("/home/r3m1g1u52/Biblioteki/opencv-custom_build/opencv/build/lib/libopencv_java455.so");
@@ -56,32 +52,32 @@ public class PlateRecognizerTests {
 
         this.fileAdapter = new VideoFileAdapter(dir + "/" + listOfFiles[0].getName(),
                 this.timeSupplier);
-        this.timer.await(30);
+        this.timer.await(41);
 
         Mat frame = null;
-        BufferedImage plate = null;
-        String text = null;
+        List <PlateImage> plates = new ArrayList<>();
+        List <PlateReading> readings = new ArrayList<>();
 
-        while (text == null) {
-            while (plate == null) {
+        while (readings.isEmpty()) {
+            while (plates.isEmpty()) {
                 frame = this.fileAdapter.getFrame();
-                this.outputManager.show(frame);
-                if (!frame.empty()) {
-                    plate = this.testPlateFinder.find(frame);
+                if (frame != null) {
+                    plates = this.testPlateFinder.find(frame);
                 }
-                this.timer.await(30);
             }
-            text = this.testTesseractReader.read(plate);
+            readings = this.testTesseractReader.read(plates);
         }
-        System.out.println(text);
-        assertEquals(listOfFiles[0].getName().substring(0,listOfFiles[0].getName().indexOf(".")), text);
+        long tmp = this.testPlateFinder.getDuration()+this.testTesseractReader.getDuration();
+        System.out.println(listOfFiles[0].getName() + " | " + readings.get(0).text() + " | finder: " + this.testPlateFinder.getDuration() + " | OCR: " + this.testTesseractReader.getDuration() + " | sum: " + tmp);
+
 
         try {
-            this.outputManager.save(this.framePreparer.getPreparedFrame(frame, this.testPlateFinder.getPlateCoords(),text),"/home/r3m1g1u52/Projekty/automatic-parking-lot-system/camera-scanner/src/test/resources/visualisation","10-prepared.png");
+            this.outputManager.save(this.framePreparer.getPreparedFrame(frame, readings),"/home/r3m1g1u52/Projekty/automatic-parking-lot-system/camera-scanner/src/test/resources/output",listOfFiles[0].getName().substring(0, listOfFiles[0].getName().indexOf('.')) + ".png");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+        assertEquals(listOfFiles[0].getName().substring(0,listOfFiles[0].getName().indexOf(".")), readings.get(0).text());
 
     }
 
@@ -91,66 +87,45 @@ public class PlateRecognizerTests {
         String dir = "/home/r3m1g1u52/Projekty/automatic-parking-lot-system/camera-scanner/src/test/resources/input/multiple";
         File folder = new File(dir);
         File[] listOfFiles = folder.listFiles();
-        Mat frame;
-        BufferedImage plate;
-        String text;
-        List<String > contours = new ArrayList<>();
-
-        String[][] toTxtFile = new String[listOfFiles.length][5];
+        Mat frame = null;
+        List <PlateImage> plates = new ArrayList<>();
+        List <PlateReading> readings = new ArrayList<>();
 
         int i;
-        int f = 0;
         for (File file : listOfFiles) {
             frame = null;
-            plate = null;
-            text = null;
+            plates.clear();
+            readings.clear();
             if (file.isFile()) {
-                i = 0;
                 this.fileAdapter = new VideoFileAdapter(dir + "/" + file.getName(), this.timeSupplier);
                 frame = this.fileAdapter.getFrame();
-                while (text == null ) {
-                    while (plate == null) {
+                while (readings.isEmpty()) {
+                    while (plates.isEmpty()) {
                         frame = this.fileAdapter.getFrame();
-                        if (!frame.empty()) {
-                            plate = this.testPlateFinder.find(frame);
-                            i++;
-                            if (i > 30) { break;}
+                        if (frame != null) {
+                            plates = this.testPlateFinder.find(frame);
+                            System.out.println("aaaa");
                         }
-                        this.timer.await(31);
                     }
-                    if (plate != null) {
-                        text = this.testTesseractReader.read(plate);
+                    if (!plates.isEmpty()) {
+                        readings = this.testTesseractReader.read(plates);
                     }
-                    if (i > 30) { break;}
                 };
-                if (!frame.empty()) {
+                if (frame != null) {
                     try {
-                        this.outputManager.save(this.framePreparer.getPreparedFrame(frame, this.testPlateFinder.getPlateCoords(), text), "/home/r3m1g1u52/Projekty/automatic-parking-lot-system/camera-scanner/src/test/resources/output", file.getName().substring(0, file.getName().indexOf('.')) + ".png");
+                        this.outputManager.save(this.framePreparer.getPreparedFrame(frame, readings), "/home/r3m1g1u52/Projekty/automatic-parking-lot-system/camera-scanner/src/test/resources/output", file.getName().substring(0, file.getName().indexOf('.')) + ".png");
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
-                toTxtFile[f][0] = file.getName();
-                toTxtFile[f][1] = text;
-                toTxtFile[f][2] = "finder: "+this.testPlateFinder.getDuration();
-                toTxtFile[f][3] = "OCR: "+this.testTesseractReader.getDuration();
+
                 long tmp = this.testPlateFinder.getDuration()+this.testTesseractReader.getDuration();
-                toTxtFile[f][4] = "sum: "+tmp;
-                f++;
+                for (PlateReading r : readings) {
+                    System.out.println(file.getName() + " | " + r.text() + " | finder: " + this.testPlateFinder.getDuration() + " | OCR: " + this.testTesseractReader.getDuration() + " | sum: " + tmp);
+                }
             }
             this.fileAdapter = null;
         }
-        for (String[] r : toTxtFile) {
-            System.out.println(r[0] + " | " + r[1] + " | " + r[2] + " | " + r[3] + " | " + r[4]);
-        }
-
-    }
-
-    @Test
-    public void StreamTest() {
-        this.streamAdapter = new VideoStreamAdapter(0);
-        this.streamer = new Streamer(this.timer,this.streamAdapter,this.plateFinder,this.tesseractReader,this.framePreparer);
-        this.streamer.start();
     }
 
 }

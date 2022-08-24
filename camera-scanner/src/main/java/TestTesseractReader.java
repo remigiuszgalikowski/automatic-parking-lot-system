@@ -1,11 +1,12 @@
 import net.sourceforge.tess4j.Tesseract;
 
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.function.Supplier;
 
-public class TestTesseractReader implements Reader<BufferedImage> {
+public class TestTesseractReader implements Reader<List<PlateImage>, List<PlateReading>> {
 
-    private final Reader<BufferedImage> reader;
+    private final Reader<List<PlateImage>, List<PlateReading>> reader;
     private final Supplier<Long> timeSupplier;
     private long duration;
 
@@ -15,9 +16,9 @@ public class TestTesseractReader implements Reader<BufferedImage> {
     }
 
     @Override
-    public String read(BufferedImage bufferedImage) {
+    public List<PlateReading> read(List<PlateImage> images) {
         long startTime = this.timeSupplier.get();
-        String text = this.reader.read(bufferedImage);
+        List<PlateReading> text = this.reader.read(images);
         this.duration = this.timeSupplier.get() - startTime;
         return text;
     }

@@ -2,9 +2,10 @@ import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.function.Supplier;
 
-public class TestPlateFinder implements Finder<BufferedImage, Mat> {
+public class TestPlateFinder implements Finder<List<PlateImage>, Mat> {
 
     private final PlateFinder plateFinder;
     private final Supplier<Long> timeSupplier;
@@ -16,15 +17,11 @@ public class TestPlateFinder implements Finder<BufferedImage, Mat> {
     }
 
     @Override
-    public BufferedImage find(Mat input) {
+    public List<PlateImage> find(Mat input) {
         long startTime = this.timeSupplier.get();
-        BufferedImage recognizedImage = this.plateFinder.find(input);
+        List<PlateImage> recognizedImage = this.plateFinder.find(input);
         this.duration = this.timeSupplier.get() - startTime;
         return recognizedImage;
-    }
-
-    public Rect getPlateCoords() {
-        return this.plateFinder.getPlateCoords();
     }
 
     public long getDuration() {

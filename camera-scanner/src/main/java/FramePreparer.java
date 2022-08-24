@@ -1,6 +1,8 @@
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.List;
+
 public class FramePreparer {
 
     private final Scalar color;
@@ -11,14 +13,12 @@ public class FramePreparer {
         this.offset = offset;
     }
 
-    public Mat getPreparedFrame(Mat frame, Rect cords, String text) {
-        if (cords != null) {
-            Imgproc.rectangle(frame, cords, color, 4);
-            if (text != null) {
-                Imgproc.putText(frame,text,
-                        new Point(cords.x-offset,cords.y-offset),
-                        Imgproc.FONT_HERSHEY_DUPLEX, 2, color);
-            }
+    public Mat getPreparedFrame(Mat frame, List<PlateReading> readings) {
+        for (PlateReading r : readings) {
+            Imgproc.rectangle(frame, r.location(), color, 4);
+            Imgproc.putText(frame,r.text(),
+                    new Point(r.location().x-offset,r.location().y-offset),
+                    Imgproc.FONT_HERSHEY_DUPLEX, 2, color);
         }
         return frame;
     }
