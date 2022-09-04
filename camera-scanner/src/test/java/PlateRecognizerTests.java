@@ -36,7 +36,7 @@ public class PlateRecognizerTests {
         this.timeSupplier = System::currentTimeMillis;
         this.timer = new Timer();
         this.tesseract = new Tesseract();
-        this.framePreparer = new FramePreparer(new Scalar(0,255,0,255), 15);
+        this.framePreparer = new FramePreparer(new Scalar(200,120,255,255), 15);
         this.testPlateFinder = new TestPlateFinder(this.timeSupplier, this.converter);
         this.testTesseractReader = new TestTesseractReader(this.tesseract, this.timeSupplier);
         this.plateFinder = new PlateFinder(this.converter);
@@ -72,7 +72,7 @@ public class PlateRecognizerTests {
 
 
         try {
-            this.outputManager.save(this.framePreparer.getPreparedFrame(frame, readings),"/home/r3m1g1u52/Projekty/automatic-parking-lot-system/camera-scanner/src/test/resources/output",listOfFiles[0].getName().substring(0, listOfFiles[0].getName().indexOf('.')) + ".png");
+            this.outputManager.save(this.framePreparer.getPreparedFrame(frame, readings),"/home/r3m1g1u52/Projekty/automatic-parking-lot-system/camera-scanner/src/test/resources/output",listOfFiles[0].getName().substring(0, listOfFiles[0].getName().indexOf('.')) + "_new" + ".png");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -107,7 +107,7 @@ public class PlateRecognizerTests {
                             System.out.println("aaaa");
                         }
                     }
-                    if (!plates.isEmpty()) {
+                    if (!plates.isEmpty() && plates != null) {
                         readings = this.testTesseractReader.read(plates);
                     }
                 };
